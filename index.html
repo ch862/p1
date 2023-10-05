@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html>
+    <head><script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>  
+    .gridlines line {
+        stroke: #bbb;
+      }
+      
+    .gridlines .domain {
+    stroke: none;
+    }
+    p {
+        font-family: Georgia, 'Times New Roman', Times, serif;
+    }
+      </style>
+    </head>
+    <body>
+
+        <p id="p1">
+            Visual 1 </br>
+            <svg id="plot" height="500" width="500" style="margin-top:50px" ></svg>
+            
+            <script>   
+
+
+                d3.csv('visual1.csv')
+                .then( (data) => {
+                    const svg = d3.select('svg#plot');
+                    const width = svg.attr('width');
+                    const height = svg.attr('height');
+                    const margins = {top: 10, right: 10, bottom: 50, left: 50}; 
+                    const chartWidth = width - margins.left - margins.right;
+                    const chartHeight = height - margins.top - margins.bottom;
+
+                    let chartArea = svg.append('g')
+                                        .attr('transform',`translate(${margins.left},${margins.top})`);
+                    
+                    const xScale = d3.scaleLinear().domain([0, 12]).range([0, chartWidth]);
+                    const dance = d3.extent(data, d => d["danceability_%"]);
+                    const energy = d3.extent(data, d => d["energy_%"])
+                    const yScale = d3.scaleLog().domain([d3.min(energy), d3.max(dance)])
+                                                        .range([chartHeight, 0]); //x
+
+                    let leftAxis = d3.axisLeft(yScale); 
+                    svg.append('g')
+                        .attr('class', 'y axis')
+                        .attr('transform',`translate(${margins.left-10},${margins.top})`) 
+                        .call(leftAxis);
+
+                    let leftGridlines = d3.axisLeft(yScale)
+                        .tickSize(-chartWidth-10)
+                        .tickFormat('')
+                        .ticks(15);
+                    
+                    svg.append('g')
+                        .attr('class', 'y gridlines')
+                        .attr('transform',`translate(${margins.left-10},${margins.top})`)
+                        .lower()
+                        .call(leftGridlines);
+                    
+                    let bottomAxis = d3.axisBottom(xScale);
+                    svg.append('g')
+                        .attr('class', 'x axis')
+                        .attr('transform',`translate(${margins.left},${chartHeight+margins.top+10})`)
+                        .call(bottomAxis);
+                    
+                    let bottomGridlines = d3.axisBottom(xScale)
+                        .tickSize(-chartHeight-10)
+                        .tickFormat('')
+                        .ticks(6);
+
+                    svg.append('g')
+                        .attr('class', 'x gridlines') // See CSS at top of file!!!
+                        .attr('transform',`translate(${margins.left},${chartHeight+margins.top+10})`)
+                        .lower()
+                        .call(bottomGridlines); 
+                    
+
+                        const lineGenerator1 = d3.line()
+                            .x((d, i) => xScale(i))
+                            .y(d => yScale(d['danceability_%']));
+
+                        // Append the first line
+                        chartArea.append('path')
+                            .datum(data)
+                            .attr('d', lineGenerator1)
+                            .attr('fill', 'none')
+                            .attr('stroke', 'darkblue')
+                            .attr('stroke-width', 2);
+
+                        // Define the second line generator
+                        const lineGenerator2 = d3.line()
+                            .x((d, i) => xScale(i))
+                            .y(d => yScale(d['energy_%']));
+
+                        // Append the second line
+                        chartArea.append('path')
+                            .datum(data)
+                            .attr('d', lineGenerator2)
+                            .attr('fill', 'none')
+                            .attr('stroke', 'red') // Change the color for the second line
+                            .attr('stroke-width', 2);
+
+
+
+                }, (error) => { console.log(error)} );
+            </script>
+            </p>
+
+
+            
+
+
+
+            <p id="p2">
+                Visual 2 </br>
+                <svg id="violin" height="500" width="500" style="margin-top:50px" ></svg>
+                
+                <script>   
+    
+    
+                    d3.csv('visual2.csv')
+                    .then( (data) => {
+                        console.log(data);
+                        const svg = d3.select('svg#violin');
+                        const width = svg.attr('width');
+                        const height = svg.attr('height');
+                        const margins = {top: 10, right: 10, bottom: 50, left: 50}; 
+                        const chartWidth = width - margins.left - margins.right;
+                        const chartHeight = height - margins.top - margins.bottom;
+    
+                        let chartArea = svg.append('g')
+                                            .attr('transform',`translate(${margins.left},${margins.top})`);
+
+                        const columns = ['danceability_%', 'valence_%', 'energy_%', 'acousticness_%', 'instrumentalness_%', 'liveness_%', 'speechiness_%'];
+                        const xScale = d3.scaleBand().domain(columns).range([0, chartWidth]);
+                        var yScale = d3.scaleLinear()
+                            .domain([ 0,100 ])          // Note that here the Y scale is set manually
+                            .range([height, 0])
+                        svg.append("g").call( d3.axisLeft(yScale) )
+    
+                        let leftAxis = d3.axisLeft(yScale); 
+
+                        svg.append('g')
+                            .attr('class', 'y axis')
+                            .attr('transform',`translate(${margins.left-10},${margins.top})`) 
+                            .call(leftAxis);
+    
+                        let leftGridlines = d3.axisLeft(yScale)
+                            .tickSize(-chartWidth-10)
+                            .tickFormat('')
+                            .ticks(15);
+                        
+                        svg.append('g')
+                            .attr('class', 'y gridlines')
+                            .attr('transform',`translate(${margins.left-10},${margins.top})`)
+                            .lower()
+                            .call(leftGridlines);
+                        
+                        let bottomAxis = d3.axisBottom(xScale);
+                        svg.append('g')
+                            .attr('class', 'x axis')
+                            .attr('transform',`translate(${margins.left},${chartHeight+margins.top+10})`)
+                            .call(bottomAxis);
+                        
+                        let bottomGridlines = d3.axisBottom(xScale)
+                            .tickSize(-chartHeight-10)
+                            .tickFormat('')
+                            .ticks(6);
+    
+                        
+
+
+
+                        svg.append("g")
+                            .attr("transform", "translate(0," + height + ")")
+                            .call(d3.axisBottom(xScale));
+
+                        // Features of the histogram
+                        var histogram = d3.histogram()
+                            .domain(yScale.domain())
+                            .thresholds(yScale.ticks(20))    // Important: how many bins approx are going to be made? It is the 'resolution' of the violin plot
+                            .value(d => d)
+
+
+                        // Compute the binning for each group of the dataset
+                        var sumstat = Array.from(d3.group(data, d => d.attribute), ([key, value]) => ({
+                                    key: key,
+                                    value: histogram(value.map(d => d.percs))
+                                    }));
+
+                        // What is the biggest number of value in a bin? We need it cause this value will have a width of 100% of the bandwidth.
+                        var maxNum = 0
+                        for ( i in sumstat ){
+                            allBins = sumstat[i].value
+                            lengths = allBins.map(function(a){return a.length;})
+                            longuest = d3.max(lengths)
+                            if (longuest > maxNum) { maxNum = longuest }
+                        }
+
+                        // The maximum width of a violin must be x.bandwidth = the width dedicated to a group
+                        var xNum = d3.scaleLinear()
+                            .range([0, xScale.bandwidth()])
+                            .domain([-maxNum,maxNum])
+
+                        // Add the shape to this svg!
+                        svg.selectAll("myViolin")
+                            .data(sumstat)
+                            .enter()        // So now we are working group per group
+                            .append("g")
+                            .attr("transform", function(d){ return("translate(" + xScale(d.key) +" ,0)") } ) // Translation on the right to be at the group position
+                            .append("path")
+                                .datum(function(d){ return(d.value)})     // So now we are working bin per bin
+                                .style("stroke", "none")
+                                .style("fill","#69b3a2")
+                                .attr("d", d3.area()
+                                    .x0(function(d){ return(xNum(-d.length)) } )
+                                    .x1(function(d){ return(xNum(d.length)) } )
+                                    .y(function(d){ return(yScale(d.x0)) } )
+                                    .curve(d3.curveCatmullRom)    // This makes the line smoother to give the violin appearance. Try d3.curveStep to see the difference
+                                )
+
+    
+                    }, (error) => { console.log(error)} );
+    
+                //     d3.csv('visual2.csv')
+                //     .then( (data) => {
+                //         const svg = d3.select('svg#violin');
+                //         const width = svg.attr('width');
+                //         const height = svg.attr('height');
+                //         const margins = {top: 10, right: 10, bottom: 50, left: 50}; 
+                //         const chartWidth = width - margins.left - margins.right;
+                //         const chartHeight = height - margins.top - margins.bottom;
+    
+                //         let chartArea = svg.append('g')
+                //                             .attr('transform',`translate(${margins.left},${margins.top})`);
+                        
+                //         const xScale = d3.scaleLinear().domain([0, 7]).range([0, chartWidth]);
+
+                //         const dance = d3.extent(data, d => d["danceability_%"]);
+                //         const valence = d3.extent(data, d => d["valence_%"]);
+                //         const energy = d3.extent(data, d => d["energy_%"]);
+                //         const acoust = d3.extent(data, d => d["acousticness_%"]);
+                //         const instrument = d3.extent(data, d => d["instrumentalness_%"]);
+                //         const live = d3.extent(data, d => d["liveness_%"]);
+                //         const speech = d3.extent(data, d => d["speechiness_%"]);
+
+                //         const yScale = d3.scaleLog().domain([d3.min(instrument), d3.max(valence)])
+                //                                             .range([chartHeight, 0]);
+    
+                //         let leftAxis = d3.axisLeft(yScale); 
+
+                //         svg.append('g')
+                //             .attr('class', 'y axis')
+                //             .attr('transform',`translate(${margins.left-10},${margins.top})`) 
+                //             .call(leftAxis);
+    
+                //         let leftGridlines = d3.axisLeft(yScale)
+                //             .tickSize(-chartWidth-10)
+                //             .tickFormat('')
+                //             .ticks(15);
+                        
+                //         svg.append('g')
+                //             .attr('class', 'y gridlines')
+                //             .attr('transform',`translate(${margins.left-10},${margins.top})`)
+                //             .lower()
+                //             .call(leftGridlines);
+                        
+                //         let bottomAxis = d3.axisBottom(xScale);
+                //         svg.append('g')
+                //             .attr('class', 'x axis')
+                //             .attr('transform',`translate(${margins.left},${chartHeight+margins.top+10})`)
+                //             .call(bottomAxis);
+                        
+                //         let bottomGridlines = d3.axisBottom(xScale)
+                //             .tickSize(-chartHeight-10)
+                //             .tickFormat('')
+                //             .ticks(6);
+    
+                //         svg.append('g')
+                //             .attr('class', 'x gridlines') // See CSS at top of file!!!
+                //             .attr('transform',`translate(${margins.left},${chartHeight+margins.top+10})`)
+                //             .lower()
+                //             .call(bottomGridlines); 
+    
+                //         var histogram = d3.histogram()
+                //             .domain(yScale.domain())
+                //             .thresholds(yScale.ticks(20))    // Important: how many bins approx are going to be made? It is the 'resolution' of the violin plot
+                //             .value(d => d)
+
+                //         // Compute the binning for each group of the dataset
+                //         var sumstat = d3.nest()  // nest function allows to group the calculation per level of a factor
+                //             .key(function(d) { return d.Species;})
+                //             .rollup(function(d) {   // For each key..
+                //             input = d.map(function(g) { return g.Sepal_Length;})    // Keep the variable called Sepal_Length
+                //             bins = histogram(input)   // And compute the binning on it.
+                //             return(bins)
+                //             })
+                //             .entries(data)
+
+                //         // What is the biggest number of value in a bin? We need it cause this value will have a width of 100% of the bandwidth.
+                //         var maxNum = 0
+                //         for ( i in sumstat ){
+                //             allBins = sumstat[i].value
+                //             lengths = allBins.map(function(a){return a.length;})
+                //             longuest = d3.max(lengths)
+                //             if (longuest > maxNum) { maxNum = longuest }
+                //         }
+
+                //         // The maximum width of a violin must be x.bandwidth = the width dedicated to a group
+                //         var xNum = d3.scaleLinear()
+                //             .range([0, xScale.bandwidth()])
+                //             .domain([-maxNum,maxNum])
+
+                //         // Color scale for dots
+                //         var myColor = d3.scaleSequential()
+                //             .interpolator(d3.interpolateInferno)
+                //             .domain([3,9])
+
+                //         // Add the shape to this svg!
+                //         svg
+                //             .selectAll("myViolin")
+                //             .data(sumstat)
+                //             .enter()        // So now we are working group per group
+                //             .append("g")
+                //             .attr("transform", function(d){ return("translate(" + xScale(d.key) +" ,0)") } ) // Translation on the right to be at the group position
+                //             .append("path")
+                //                 .datum(function(d){ return(d.value)})     // So now we are working bin per bin
+                //                 .style("stroke", "none")
+                //                 .style("fill","grey")
+                //                 .attr("d", d3.area()
+                //                     .x0( xNum(0) )
+                //                     .x1(function(d){ return(xNum(d.length)) } )
+                //                     .y(function(d){ return(y(d.x0)) } )
+                //                     .curve(d3.curveCatmullRom)    // This makes the line smoother to give the violin appearance. Try d3.curveStep to see the difference
+                //                 )
+
+                //         // Add individual points with jitter
+                //         var jitterWidth = 40
+                //         svg
+                //             .selectAll("indPoints")
+                //             .data(data)
+                //             .enter()
+                //             .append("circle")
+                //             .attr("cx", function(d){return(xScale(d.Species) + x.bandwidth()/2 - Math.random()*jitterWidth )})
+                //             .attr("cy", function(d){return(yScale(d.Sepal_Length))})
+                //             .attr("r", 5)
+                //             .style("fill", function(d){ return(myColor(d.Sepal_Length))})
+                //             .attr("stroke", "white")
+
+    
+                //     }, (error) => { console.log(error)} );
+                 </script>
+                </p>
+
+                
+    </body>
+</html>
